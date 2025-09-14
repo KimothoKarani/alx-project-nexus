@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15-bookworm
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    ports:
+      - "5432:5432" # For local DB client access but it's optional
+
+  redis:
+    image: redis:7-bookworm
+    ports:
+      - "6379:6379"
+
+  web:
+    build: . # This will build the image using the Dockerfile in the current directory
+    command: python manage.py runserver 0.0.0.0:8000 # To run Django
+    volumes:
+      - .:/app # Mount the entire root into the container's /app for live code changes
+    ports:
+      - "8000:8000" # Mapped container port 8000 yo host port 8000
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+volumes:
+    postgres_data:
+
+
+
