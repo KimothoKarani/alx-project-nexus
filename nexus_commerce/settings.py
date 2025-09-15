@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'rest_framework',
     'users',
+    'products',
+    'carts',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -141,3 +144,6 @@ CACHES = {
         }
     }
 }
+
+PHONENUMBER_DB_FORMAT = 'E164' # Stores phone numbers in a standardized international format
+

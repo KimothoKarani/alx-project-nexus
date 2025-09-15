@@ -19,6 +19,13 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have a password')
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True) # Superusers should be active by default
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError('Superuser must have is_staff=True')
+
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError('Superuser must have is_superuser=True')
 
         return self.create_user(email, password, **extra_fields)
 
@@ -51,3 +58,37 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+class Address(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")
+    street_address = models.CharField(max_length=255, null=False, blank=False)
+    apartment_suite = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=255, null=False, blank=False)
+    state = models.CharField(max_length=255, blank=True, null=True)
+    zip_code = models.CharField(max_length=255, null=False, blank=False)
+    country = models.CharField(max_length=255, null=False, blank=False)
+    is_default = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Addresses"
+        unique_together = ("user", "street_address", "city", "zip_code", "country") # Prevent exact duplicate addresses for a user
+        ordering = ['user', '-is_default', 'city']
+
+    def __str__(self):
+        return f"{self.street_address}, {self.city}, {self.country} ({self.user.email})"
+
+
+
+
+
+
+
+
+
+
+
+
