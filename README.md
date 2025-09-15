@@ -117,6 +117,6 @@ I am confident in my ability to apply these skills to build impactful, robust, a
 
 Here’s the database design for the e-commerce backend:
 
-![ERD](docs/erd.png)
+![ERD](docs/Nexus_commerce.png)
 
 You can also explore the interactive ERD here: [View on dbdiagram.io](https://dbdiagram.io/d/Nexus_commerce-68c7dba4ce69eed1117f1840)
