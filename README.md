@@ -112,3 +112,11 @@ This repository, `alx-project-nexus`, is a comprehensive documentation hub for m
 This ProDev Backend Engineering program, culminating in Project Nexus, has been an immensely transformative experience. It has equipped me with a comprehensive understanding of modern backend development principles and technologies, from foundational Python and Django to advanced topics like containerization, asynchronous tasks, and scalable system design. 
 
 I am confident in my ability to apply these skills to build impactful, robust, and efficient backend systems, and I look forward to contributing to real-world projects with this solid foundation. My journey through Project Nexus has solidified my passion for backend engineering and prepared me to tackle complex challenges with confidence.
+
+## Entity Relationship Diagram (ERD)
+
+Here’s the database design for the e-commerce backend:
+
+![ERD](docs/erd.png)
+
+You can also explore the interactive ERD here: [View on dbdiagram.io](https://dbdiagram.io/d/Nexus_commerce-68c7dba4ce69eed1117f1840)

@@ -4,3 +4,5 @@ psycopg2-binary
 python-dotenv
 redis
 django-redis
+Pillow
+django-phonenumber-field[phonenumberslite]
