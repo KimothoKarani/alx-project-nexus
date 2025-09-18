@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from .models import Cart, CartItem
-from products.serializers import ProductSerializer  # Import for nested product representation
+from products.serializers import ProductSerializer
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product_detail = ProductSerializer(read_only=True)  # Nested serializer to show product details
+    product_detail = ProductSerializer(read_only=True)
 
     class Meta:
         model = CartItem
@@ -14,39 +14,61 @@ class CartItemSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'product_detail', 'price_at_time', 'updated_at']
         extra_kwargs = {
-            'cart': {'write_only': True}  # Cart should be set by the view
+            'cart': {'write_only': True},
+            'product': {'write_only': True},  # only IDs for product input
         }
 
-    # Custom validation/logic can go here if needed, e.g., checking product stock
+    def validate_quantity(self, value):
+        if value < 1:
+            raise serializers.ValidationError("Quantity must be at least 1")
+        return value
+
+    def validate(self, attrs):
+        product = attrs.get("product")
+        quantity = attrs.get("quantity")
+
+        if product and quantity and quantity > product.stock_quantity:
+            raise serializers.ValidationError(
+                {"quantity": f"Only {product.stock_quantity} units of {product.name} are available."}
+            )
+        return attrs
+
     def create(self, validated_data):
-        # fetch the current product price
-        product = validated_data.get('product')
+        product = validated_data.get("product")
         if product:
-            validated_data['price_at_time'] = product.price
+            validated_data["price_at_time"] = product.price
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        # Update price_at_time if product changes or stock logic warrants
+        product = validated_data.get("product", instance.product)
+        if product:
+            validated_data["price_at_time"] = product.price
         return super().update(instance, validated_data)
 
 
 class CartSerializer(serializers.ModelSerializer):
-    items = CartItemSerializer(many=True, read_only=True)  # Nested serializer for cart items
-    user_email = serializers.ReadOnlyField(source='user.email')
-
-    # Optional: calculate cart total
+    items = CartItemSerializer(many=True, read_only=True)
+    user_email = serializers.ReadOnlyField(source="user.email")
     cart_total = serializers.SerializerMethodField()
+    cart_count = serializers.SerializerMethodField()  # new
 
     class Meta:
         model = Cart
         fields = [
             'id', 'user', 'user_email', 'is_active', 'items',
-            'cart_total', 'created_at', 'updated_at'
+            'cart_total', 'cart_count', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'user_email', 'is_active', 'created_at', 'updated_at', 'cart_total']
+        read_only_fields = [
+            'id', 'user_email', 'is_active', 'created_at',
+            'updated_at', 'cart_total', 'cart_count'
+        ]
         extra_kwargs = {
-            'user': {'write_only': True}  # User should be set by the view
+            'user': {'write_only': True}
         }
 
     def get_cart_total(self, obj):
-        return sum(item.quantity * (item.price_at_time or item.product.price) for item in obj.items.all())
+        return sum(item.quantity * (item.price_at_time or item.product.price)
+                   for item in obj.items.all())
+
+    def get_cart_count(self, obj):
+        return sum(item.quantity for item in obj.items.all())

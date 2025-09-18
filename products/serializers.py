@@ -46,4 +46,10 @@ class ReviewSerializer(serializers.ModelSerializer):
             'product': {'write_only': True}  # Product ID passed in URL or by view
         }
 
+    def validate_rating(self, value):
+        """Extra check for rating"""
+        if not (1 <= value <= 5):
+            raise serializers.ValidationError("Rating must be between 1 and 5 stars")
+        return value
+
 

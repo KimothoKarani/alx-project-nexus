@@ -1,0 +1,12 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import CartViewSet, CartItemViewSet
+
+router = DefaultRouter()
+router.register(r'', CartViewSet, basename='cart')  # /api/v1/carts/
+router.register(r'items', CartItemViewSet, basename='cart_item')  # /api/v1/carts/items/
+
+urlpatterns = [
+    path('', include(router.urls)),
+    path('my-cart/', CartViewSet.as_view({'get': 'my_cart'}), name='my_cart'),
+]
