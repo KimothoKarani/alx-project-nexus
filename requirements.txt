@@ -1,4 +1,5 @@
 asgiref==3.9.1
+colorama==0.4.6
 Django==5.2.6
 django-filter==25.1
 django-phonenumber-field==8.1.0
@@ -6,13 +7,20 @@ django-redis==6.0.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 drf-yasg==1.21.10
+factory_boy==3.3.3
+Faker==37.8.0
 inflection==0.5.1
+iniconfig==2.1.0
 packaging==25.0
 phonenumbers==9.0.13
 phonenumberslite==9.0.13
 pillow==11.3.0
+pluggy==1.6.0
 psycopg2-binary==2.9.10
+Pygments==2.19.2
 PyJWT==2.10.1
+pytest==8.4.2
+pytest-django==4.11.1
 python-dotenv==1.1.1
 pytz==2025.2
 PyYAML==6.0.2
