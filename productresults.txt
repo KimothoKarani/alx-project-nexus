@@ -1,0 +1,70 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.11, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python3.12
+cachedir: .pytest_cache
+django: version: 5.2.6, settings: nexus_commerce.settings (from ini)
+rootdir: /app
+configfile: pytest.ini
+plugins: Faker-37.8.0, django-4.11.1
+collecting ... collected 26 items
+
+products/tests/test_models.py::test_category_creation PASSED             [  3%]
+products/tests/test_models.py::test_category_unique_name PASSED          [  7%]
+products/tests/test_models.py::test_category_unique_slug PASSED          [ 11%]
+products/tests/test_models.py::test_nested_category PASSED               [ 15%]
+products/tests/test_models.py::test_product_creation PASSED              [ 19%]
+products/tests/test_models.py::test_product_unique_name PASSED           [ 23%]
+products/tests/test_models.py::test_product_stock_quantity_validator PASSED [ 26%]
+products/tests/test_models.py::test_review_creation PASSED               [ 30%]
+products/tests/test_models.py::test_review_unique_user_product_constraint PASSED [ 34%]
+products/tests/test_models.py::test_review_rating_validators PASSED      [ 38%]
+products/tests/test_views.py::test_category_list_unauthenticated PASSED  [ 42%]
+products/tests/test_views.py::test_category_create_unauthorized PASSED   [ 46%]
+products/tests/test_views.py::test_category_create_admin PASSED          [ 50%]
+products/tests/test_views.py::test_product_list_unauthenticated PASSED   [ 53%]
+products/tests/test_views.py::test_product_create_customer_unauthorized PASSED [ 57%]
+products/tests/test_views.py::test_product_create_seller PASSED          [ 61%]
+products/tests/test_views.py::test_product_update_owner PASSED           [ 65%]
+products/tests/test_views.py::test_product_update_non_owner_unauthorized PASSED [ 69%]
+products/tests/test_views.py::test_product_filter_by_category PASSED     [ 73%]
+products/tests/test_views.py::test_product_search PASSED                 [ 76%]
+products/tests/test_views.py::test_product_ordering_by_price PASSED      [ 80%]
+products/tests/test_views.py::test_product_reviews_list PASSED           [ 84%]
+products/tests/test_views.py::test_review_create_authenticated PASSED    [ 88%]
+products/tests/test_views.py::test_review_create_unauthenticated PASSED  [ 92%]
+products/tests/test_views.py::test_review_update_owner PASSED            [ 96%]
+products/tests/test_views.py::test_review_update_non_owner_unauthorized PASSED [100%]
+
+=============================== warnings summary ===============================
+products/tests/test_models.py: 4 warnings
+products/tests/test_views.py: 12 warnings
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: SellerUserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the SellerUserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+products/tests/test_models.py: 3 warnings
+products/tests/test_views.py: 8 warnings
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: UserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the UserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+products/tests/test_views.py::test_category_list_unauthenticated
+  /usr/local/lib/python3.12/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+    warnings.warn(
+
+products/tests/test_views.py::test_category_create_admin
+products/tests/test_views.py::test_review_update_non_owner_unauthorized
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: AdminUserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the AdminUserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+products/tests/test_views.py::test_product_list_unauthenticated
+products/tests/test_views.py::test_product_filter_by_category
+products/tests/test_views.py::test_product_search
+  /usr/local/lib/python3.12/site-packages/rest_framework/pagination.py:207: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'products.models.Product'> QuerySet.
+    paginator = self.django_paginator_class(queryset, page_size)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 26 passed, 33 warnings in 15.62s =======================

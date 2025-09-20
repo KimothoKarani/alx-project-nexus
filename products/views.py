@@ -76,13 +76,27 @@ class ProductViewSet(viewsets.ModelViewSet):
             )
         serializer.save()
 
-    @action(detail=True, methods=["get"], url_path="reviews")
+    @action(detail=True, methods=["get", "post"], url_path="reviews",
+            permission_classes=[permissions.IsAuthenticatedOrReadOnly])
     def reviews(self, request, slug=None):
-        """GET /api/v1/products/{slug}/reviews/ → return all reviews for this product."""
         product = self.get_object()
-        reviews = product.reviews.all().select_related("user")
-        serializer = ReviewSerializer(reviews, many=True, context={"request": request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if request.method == "GET":
+            reviews = product.reviews.all().select_related("user")
+            serializer = ReviewSerializer(reviews, many=True, context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == "POST":
+            if not request.user.is_authenticated:
+                return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            serializer = ReviewSerializer(
+                data=request.data,
+                context={"request": request, "product": product}  # pass product here
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=request.user, product=product)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # ------------------------------

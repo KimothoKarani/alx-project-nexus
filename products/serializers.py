@@ -25,10 +25,10 @@ class ProductSerializer(serializers.ModelSerializer):
             'category', 'category_name', 'owner', 'owner_email', 'sku', 'brand',
             'weight', 'dimensions'
         ]
-        read_only_fields = ['id', 'slug', 'created_at', 'updated_at', 'category_name', 'owner_email']
-        extra_kwargs = {
-            'owner': {'write_only': True},
-        }
+        read_only_fields = [
+            'id', 'slug', 'created_at', 'updated_at',
+            'category_name', 'owner', 'owner_email'
+        ]
 
 class ReviewSerializer(serializers.ModelSerializer):
     user_email = serializers.ReadOnlyField(source='user.email')
@@ -40,16 +40,11 @@ class ReviewSerializer(serializers.ModelSerializer):
             'id', 'user', 'user_email', 'product', 'product_name', 'rating',
             'comment', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'user_email', 'product_name', 'created_at', 'updated_at']
-        extra_kwargs = {
-            'user': {'write_only': True},  # User should be set by the view based on authenticated user
-            'product': {'write_only': True}  # Product ID passed in URL or by view
-        }
+        read_only_fields = ['id', 'user', 'user_email', 'product', 'product_name', 'created_at', 'updated_at']
+
 
     def validate_rating(self, value):
-        """Extra check for rating"""
         if not (1 <= value <= 5):
             raise serializers.ValidationError("Rating must be between 1 and 5 stars")
         return value
-
 
