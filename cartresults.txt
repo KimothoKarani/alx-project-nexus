@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.11, pytest-8.4.2, pluggy-1.6.0
+django: version: 5.2.6, settings: nexus_commerce.settings (from ini)
+rootdir: /app
+configfile: pytest.ini
+plugins: Faker-37.8.0, django-4.11.1
+collected 19 items
+
+carts/tests/test_models.py ........                                      [ 42%]
+carts/tests/test_views.py ...........                                    [100%]
+
+=============================== warnings summary ===============================
+carts/tests/test_models.py: 8 warnings
+carts/tests/test_views.py: 12 warnings
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: UserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the UserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+carts/tests/test_models.py: 4 warnings
+carts/tests/test_views.py: 8 warnings
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: SellerUserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the SellerUserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+carts/tests/test_views.py::test_my_cart_get_or_create
+  /usr/local/lib/python3.12/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 19 passed, 33 warnings in 17.11s =======================

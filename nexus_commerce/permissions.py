@@ -17,11 +17,17 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return obj.owner == request.user
 
 class IsAuthenticatedAndOwner(permissions.BasePermission):
-    '''
-    Custom permission to only allow authenticated users to view/edit their own objects.
-    Assumes the object has a 'user' attribute (e.g., Address, Cart, Order, Review).
-    or directly refers to the request.user (e.g., UserProfile)
-    '''
+    """
+    Custom permission:
+    - User must be authenticated
+    - User must own the object
+    Supports models with:
+      - `user` field (e.g. Cart, Address, Review)
+      - `owner` field (e.g. Product)
+      - `cart.user` relationship (e.g. CartItem)
+      - direct user objects
+    """
+
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
 
@@ -29,13 +35,20 @@ class IsAuthenticatedAndOwner(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
+        # Direct user model
         if isinstance(obj, get_user_model()):
             return obj == request.user
 
-        if hasattr(obj, 'user'):
+        # Models with `user`
+        if hasattr(obj, "user"):
             return obj.user == request.user
 
-        if hasattr(obj, 'owner'):
+        # Models with `owner`
+        if hasattr(obj, "owner"):
             return obj.owner == request.user
+
+        # CartItem → check the related cart.user
+        if hasattr(obj, "cart") and hasattr(obj.cart, "user"):
+            return obj.cart.user == request.user
 
         return False

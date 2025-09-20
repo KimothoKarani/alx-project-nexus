@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
+from rest_framework import serializers
 
 from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
@@ -29,12 +30,17 @@ class CartViewSet(viewsets.ModelViewSet):
             raise ValueError("You already have an active cart.")
         serializer.save(user=self.request.user)
 
-    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path="my-cart",   # maps to /carts/my-cart/
+    )
     def my_cart(self, request):
-        # Get or create an active cart for the user
-        cart, created = Cart.objects.get_or_create(user=request.user, is_active=True)
-        cart = Cart.objects.filter(id=cart.id).prefetch_related("items__product").first()
-        serializer = self.get_serializer(cart)
+        cart, _ = Cart.objects.get_or_create(user=request.user, is_active=True)
+        serializer = self.get_serializer(
+            Cart.objects.filter(id=cart.id).prefetch_related("items__product").first()
+        )
         return Response(serializer.data)
 
 
@@ -64,19 +70,30 @@ class CartItemViewSet(viewsets.ModelViewSet):
         product = serializer.validated_data["product"]
         quantity = serializer.validated_data["quantity"]
 
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=user_cart,
-            product=product,
-            defaults={"quantity": quantity, "price_at_time": product.price},
-        )
+        try:
+            # Try to get existing item
+            cart_item = CartItem.objects.get(cart=user_cart, product=product)
+            # Update existing item
+            new_quantity = cart_item.quantity + quantity
 
-        if not created:
-            cart_item.quantity += quantity
+            if new_quantity > product.stock_quantity:
+                raise serializers.ValidationError(
+                    {"quantity": f"Only {product.stock_quantity} units of {product.name} are available."}
+                )
+
+            cart_item.quantity = new_quantity
             cart_item.price_at_time = product.price
             cart_item.save()
-            serializer.instance = cart_item  # so serializer returns the updated item
-        else:
-            serializer.save(cart=user_cart)
+            serializer.instance = cart_item
+
+        except CartItem.DoesNotExist:
+            # Create new item
+            if quantity > product.stock_quantity:
+                raise serializers.ValidationError(
+                    {"quantity": f"Only {product.stock_quantity} units of {product.name} are available."}
+                )
+            serializer.save(cart=user_cart, price_at_time=product.price)
+
 
     def perform_update(self, serializer):
         """
