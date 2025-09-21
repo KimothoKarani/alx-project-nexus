@@ -137,7 +137,8 @@ class Payment(models.Model):
         ]
 
     def __str__(self):
-        return f"Payment for Order {self.order.id} - {self.status} ({self.amount})"
+        return f"Payment for Order {self.order.id} - {self.get_status_display()} ({self.amount})"
+
 
 
 

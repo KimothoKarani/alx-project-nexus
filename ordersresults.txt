@@ -1,0 +1,77 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.11, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python3.12
+cachedir: .pytest_cache
+django: version: 5.2.6, settings: nexus_commerce.settings (from ini)
+rootdir: /app
+configfile: pytest.ini
+plugins: Faker-37.8.0, django-4.11.1
+collecting ... collected 32 items
+
+orders/tests/test_models.py::TestOrderModel::test_create_order PASSED    [  3%]
+orders/tests/test_models.py::TestOrderModel::test_order_factory_variations PASSED [  6%]
+orders/tests/test_models.py::TestOrderModel::test_order_status_choices PASSED [  9%]
+orders/tests/test_models.py::TestOrderModel::test_order_payment_status_choices PASSED [ 12%]
+orders/tests/test_models.py::TestOrderItemModel::test_create_order_item PASSED [ 15%]
+orders/tests/test_models.py::TestOrderItemModel::test_order_item_factory_variations PASSED [ 18%]
+orders/tests/test_models.py::TestOrderItemModel::test_order_item_string_representation PASSED [ 21%]
+orders/tests/test_models.py::TestOrderItemModel::test_order_item_min_quantity_validation PASSED [ 25%]
+orders/tests/test_models.py::TestOrderItemModel::test_unique_constraint_order_product PASSED [ 28%]
+orders/tests/test_models.py::TestPaymentModel::test_create_payment PASSED [ 31%]
+orders/tests/test_models.py::TestPaymentModel::test_payment_factory_variations PASSED [ 34%]
+orders/tests/test_models.py::TestPaymentModel::test_payment_method_choices PASSED [ 37%]
+orders/tests/test_models.py::TestPaymentModel::test_payment_status_choices PASSED [ 40%]
+orders/tests/test_models.py::TestPaymentModel::test_payment_string_representation PASSED [ 43%]
+orders/tests/test_models.py::TestPaymentModel::test_transaction_id_uniqueness PASSED [ 46%]
+orders/tests/test_serializers.py::TestOrderItemSerializer::test_order_item_serialization PASSED [ 50%]
+orders/tests/test_serializers.py::TestOrderItemSerializer::test_order_item_deserialization PASSED [ 53%]
+orders/tests/test_serializers.py::TestOrderSerializer::test_order_serialization PASSED [ 56%]
+orders/tests/test_serializers.py::TestOrderSerializer::test_order_serialization_minimal_data PASSED [ 59%]
+orders/tests/test_serializers.py::TestOrderSerializer::test_order_deserialization_validation PASSED [ 62%]
+orders/tests/test_serializers.py::TestPaymentSerializer::test_payment_serialization PASSED [ 65%]
+orders/tests/test_serializers.py::TestPaymentSerializer::test_payment_deserialization PASSED [ 68%]
+orders/tests/test_views.py::TestOrderViewSet::test_list_orders_authenticated_user PASSED [ 71%]
+orders/tests/test_views.py::TestOrderViewSet::test_list_orders_admin_sees_all PASSED [ 75%]
+orders/tests/test_views.py::TestOrderViewSet::test_retrieve_order_owner PASSED [ 78%]
+orders/tests/test_views.py::TestOrderViewSet::test_retrieve_order_non_owner PASSED [ 81%]
+orders/tests/test_views.py::TestOrderViewSet::test_create_order_from_cart_success PASSED [ 84%]
+orders/tests/test_views.py::TestOrderViewSet::test_filter_orders_by_status PASSED [ 87%]
+orders/tests/test_views.py::TestOrderViewSet::test_filter_orders_by_payment_status PASSED [ 90%]
+orders/tests/test_views.py::TestPaymentViewSet::test_create_payment_success SKIPPED [ 93%]
+orders/tests/test_views.py::TestPaymentViewSet::test_create_payment_non_pending_order SKIPPED [ 96%]
+orders/tests/test_views.py::TestPaymentViewSet::test_create_payment_wrong_user SKIPPED [100%]
+
+=============================== warnings summary ===============================
+orders/tests/test_models.py: 52 warnings
+orders/tests/test_serializers.py: 9 warnings
+orders/tests/test_views.py: 49 warnings
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: UserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the UserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+orders/tests/test_models.py: 6 warnings
+orders/tests/test_serializers.py: 4 warnings
+orders/tests/test_views.py: 1 warning
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: SellerUserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the SellerUserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+orders/tests/test_serializers.py::TestOrderSerializer::test_order_serialization
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: OrderWithItemsFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the OrderWithItemsFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+orders/tests/test_views.py::TestOrderViewSet::test_list_orders_authenticated_user
+  /usr/local/lib/python3.12/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+    warnings.warn(
+
+orders/tests/test_views.py::TestOrderViewSet::test_list_orders_admin_sees_all
+  /usr/local/lib/python3.12/site-packages/factory/django.py:182: DeprecationWarning: AdminUserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the AdminUserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 29 passed, 3 skipped, 124 warnings in 46.14s =================

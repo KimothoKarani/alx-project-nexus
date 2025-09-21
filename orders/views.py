@@ -13,6 +13,8 @@ from carts.models import Cart, CartItem
 from .serializers import OrderSerializer, OrderItemSerializer, PaymentSerializer
 from nexus_commerce.permissions import IsAuthenticatedAndOwner
 from rest_framework import serializers
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -26,7 +28,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated, IsAuthenticatedAndOwner]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['status', 'payment_status', 'created_at']
     ordering_fields = ['created_at', 'total_amount']
 
