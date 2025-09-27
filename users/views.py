@@ -23,15 +23,16 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     Authenticated users can view and update their own profile.
     Supports `/api/v1/users/me/` as a shortcut.
     """
-    queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAuthenticatedAndOwner]
-    lookup_field = "id"
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        if self.kwargs.get(self.lookup_field) == "me":
-            return self.request.user
-        return super().get_object()
+        # Always return the current user for this view
+        return self.request.user
+
+    def get_queryset(self):
+        # This is required but won't be used since we override get_object
+        return User.objects.filter(id=self.request.user.id)
 
 
 class AddressViewSet(viewsets.ModelViewSet):

@@ -32,7 +32,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             })
         return attrs
 
-    # Remove create() override — let the viewset handle it
+    # Removed create() override — let the viewset handle it
     # def create(self, validated_data):
     #     product = validated_data.get("product")
     #     if product:

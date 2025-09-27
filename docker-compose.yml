@@ -13,6 +13,20 @@ services:
     ports:
       - "6379:6379"
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672" #AMQP protocol port (for Celery)
+      - "15672:15672" # Management UI port (http://localhost:15672)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     build: . # This will build the image using the Dockerfile in the current directory
     command: python manage.py runserver 0.0.0.0:8000 # To run Django
@@ -25,6 +39,36 @@ services:
     depends_on:
       - db
       - redis
+      - rabbitmq
+  celery_worker:
+    build: .
+    command: celery -A nexus_commerce worker --loglevel=info --concurrency=1
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: nexus_commerce.settings
+    depends_on:
+      - db
+      - redis
+      - rabbitmq # Celery worker depends on RabbitMQ and Redis
+      - web # Depends on web to ensure Django project structure is built
+    restart: on-failure # Automatically restart if it crashes
+
+  celery_beat:
+    build: .
+    command: celery -A nexus_commerce beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+
+
 volumes:
     postgres_data:
 
