@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'drf_yasg',
+    'graphene_django',
 
     # Local apps
     'users',
@@ -253,3 +254,17 @@ CACHES = {
         "KEY_PREFIX": "nexus_cache",
     }
 }
+
+# Graphene
+GRAPHENE = {
+    'SCHEMA': 'nexus_commerce.schema.schema',
+    'MIDDLEWARE': (
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ),
+}
+
+# Authentication backends for GraphQL
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',  # JWT backend for GraphQL
+    'django.contrib.auth.backends.ModelBackend',  # Django's default backend
+]

@@ -27,6 +27,10 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from graphene_django.views import GraphQLView
+from nexus_commerce.schema import schema
+
+
 # Swagger/OpenAPI Schema View configuration
 schema_view = get_schema_view(
     openapi.Info(
@@ -49,6 +53,9 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
+# GraphQL Endpoint
+    path('graphql/', GraphQLView.as_view(graphiql=True, schema=schema)), # graphiql=True for in-browser IDE
 
     # API Endpoints for the application
     path('api/v1/users/', include('users.urls')),
