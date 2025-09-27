@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.urls import path, include, re_path
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -66,6 +67,9 @@ urlpatterns = [
     path('api/v1/products/', include('products.urls')),
     path('api/v1/carts/', include('carts.urls')),
     path('api/v1/orders/', include('orders.urls')),
+
+    # 👇 Redirect root to Swagger
+    path("", lambda request: HttpResponseRedirect("/swagger/")),
 
     # Swagger UI and RedDoc Documentation URLs
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
