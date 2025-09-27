@@ -1,122 +1,505 @@
-# alx-project-nexus: ProDev Backend Engineering Learnings Documentation
+# Nexus Commerce - Production E-commerce Backend
+
+A full-featured, production-ready e-commerce backend API built with Django, featuring comprehensive REST APIs, GraphQL support, real-time processing, and automated CI/CD deployment.
+
+**API Documentation:** https://nexus-commerce.onrender.com/swagger/  
+**GraphQL Playground:** https://nexus-commerce.onrender.com/graphql/
 
 ## Table of Contents
-*   [Introduction to ProDev Backend Engineering Program](#introduction-to-prodev-backend-engineering-program)
-*   [Key Technologies Covered](#key-technologies-covered)
-    *   [Python](#python)
-    *   [Django](#django)
-    *   [REST APIs (Django REST Framework)](#rest-apis-django-rest-framework)
-    *   [GraphQL APIs](#graphql-apis)
-    *   [Docker](#docker)
-    *   [CI/CD (GitHub Actions)](#cicd-github-actions)
-    *   [Celery & RabbitMQ](#celery--rabbitmq)
-*   [Important Backend Development Concepts](#important-backend-development-concepts)
-    *   [Database Design & Optimization (PostgreSQL)](#database-design--optimization-postgresql)
-    *   [Asynchronous Programming](#asynchronous-programming)
-    *   [Caching Strategies](#caching-strategies)
-    *   [System Design & Scalable Architecture](#system-design--scalable-architecture)
-    *   [Authentication & Authorization](#authentication--authorization)
-*   [Challenges Faced & Solutions Implemented](#challenges-faced--solutions-implemented)
-*   [Best Practices & Personal Takeaways](#best-practices--personal-takeaways)
-*   [Collaboration & Project Management Tools](#collaboration--project-management-tools)
-*   [Conclusion](#conclusion)
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [API Documentation](#api-documentation)
+- [Database Schema](#database-schema)
+- [Deployment](#deployment)
+- [Development](#development)
+- [Testing](#testing)
+- [Contributing](#contributing)
+
+## Features
+
+### Core E-commerce Functionality
+
+- **User Management:** Registration, JWT authentication, profile management
+- **Product Catalog:** Categories, products with reviews and ratings
+- **Shopping Cart:** Persistent cart with session management
+- **Order Processing:** Complete order lifecycle with payment integration
+- **Address Management:** Multiple shipping/billing addresses
+
+### Technical Excellence
+
+- **Dual API Support:** Comprehensive REST API + GraphQL endpoints
+- **Real-time Processing:** Celery workers with RabbitMQ for async tasks
+- **Advanced Caching:** Redis-based caching with smart invalidation
+- **Rate Limiting:** Comprehensive API throttling and security
+- **Containerized:** Full Docker support for all environments
+- **CI/CD Pipeline:** Automated testing and deployment to Render
+
+## Quick Start
+
+### Prerequisites
+
+- Docker & Docker Compose
+- Python 3.12+
+- PostgreSQL 15+
+- Redis 7+
+- RabbitMQ 3.8+
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/KimothoKarani/alx-project-nexus.git
+cd alx-project-nexus
+
+# Set up environment
+cp .env.example .env
+
+# Edit .env with your configuration
+
+# Start all services
+docker-compose up --build
+
+# The application will be available at http://localhost:8000
+```
+
+### Production Deployment
+
+The application is automatically deployed to Render on pushes to the main branch. Visit: https://nexus-commerce.onrender.com/swagger/
+
+## API Documentation
+
+### Live API Endpoints
+
+**Base URL:** https://nexus-commerce.onrender.com/api
+
+#### Authentication Endpoints
+
+- `POST /api/token/` - Obtain JWT tokens
+- `POST /api/token/refresh/` - Refresh JWT tokens
+- `POST /api/token/verify/` - Verify JWT tokens
+
+#### User Management
+
+- `POST /api/v1/users/register/` - User registration
+- `GET/PUT /api/v1/users/me/` - Current user profile
+- `GET/PUT /api/v1/users/{id}/` - User management (admin)
+
+#### Product Catalog
+
+- `GET /api/v1/products/` - List products (with filtering, sorting, pagination)
+- `POST /api/v1/products/` - Create product (seller only)
+- `GET /api/v1/products/{slug}/` - Product details
+- `GET/POST /api/v1/products/{slug}/reviews/` - Product reviews
+
+#### Shopping Cart
+
+- `GET /api/v1/carts/carts/my-cart/` - Get the user's cart
+- `POST /api/v1/carts/cart-items/` - Add item to cart
+- `PUT/DELETE /api/v1/carts/cart-items/{id}/` - Update/remove cart items
+
+#### Order Management
+
+- `GET /api/v1/orders/` - List user orders
+- `POST /api/v1/orders/create-from-cart/` - Create order from cart
+- `GET /api/v1/orders/{id}/` - Order details
+
+#### GraphQL API
+
+- `POST /graphql/` - GraphQL endpoint
+- An interactive playground is available at `/graphql/` when `DEBUG=True`
+
+### Example API Usage
+
+#### User Registration
+
+```bash
+curl -X POST https://nexus-commerce.onrender.com/api/v1/users/register/ \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "user@example.com",
+  "full_name": "John Doe",
+  "password": "securepassword123",
+  "user_type": "customer"
+}'
+```
+
+#### JWT Authentication
+
+```bash
+curl -X POST https://nexus-commerce.onrender.com/api/token/ \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "user@example.com",
+  "password": "securepassword123"
+}'
+```
+
+#### GraphQL Query
+
+```graphql
+query {
+  allProducts(categorySlug: "electronics", minPrice: 100, maxPrice: 1000) {
+    id
+    name
+    price
+    averageRating
+    category {
+      name
+      slug
+    }
+    reviews {
+      rating
+      comment
+      user {
+        fullName
+      }
+    }
+  }
+}
+```
+
+#### Get Specific Product:
+
+```graphql
+query {
+  productBySlug(slug: "macbook-pro") {
+    id
+    name
+    description
+    price
+    stockQuantity
+    averageRating
+    brand
+    sku
+    category {
+      name
+    }
+    owner {
+      fullName
+      email
+    }
+  }
+}
+```
+
+#### Create Product (Seller Only):
+
+```graphql
+mutation {
+  createProduct(input: {
+    name: "New Product",
+    slug: "new-product",
+    description: "Product description",
+    price: 99.99,
+    stockQuantity: 50,
+    categoryId: "category-uuid-here",
+    sku: "NP001",
+    brand: "Example Brand"
+  }) {
+    success
+    message
+    product {
+      id
+      name
+      slug
+      price
+    }
+  }
+}
+```
+
+## Database Schema
+
+The application uses a comprehensive PostgreSQL database schema:
+
+### Core Tables
+
+**Users:** User accounts with authentication
+- `id, email, full_name, password, user_type, phone_number, profile_image`
+
+**Addresses:** User address management
+- `id, user_id, street_address, city, zip_code, country, is_default`
+
+**Categories:** Product categorization with hierarchy
+- `id, name, slug, description, parent_id`
+
+**Products:** Product catalog with inventory
+- `id, name, slug, description, price, stock_quantity, category_id, owner_id`
+
+**Carts & CartItems:** Shopping cart functionality
+- `carts: id, user_id`
+- `cart_items: id, cart_id, product_id, quantity`
+
+**Orders & OrderItems:** Order management
+- `orders: id, user_id, total_amount, status, payment_status`
+- `order_items: id, order_id, product_id, quantity, price`
+
+**Payments:** Payment processing
+- `id, order_id, amount, method, transaction_id, status`
+
+**Reviews:** Product reviews and ratings
+- `id, user_id, product_id, rating, comment`
+
+## Deployment
+
+### Current Production Deployment
+
+The application is deployed on Render.com with the following services:
+
+- **Web Service:** Django application with Gunicorn
+- **PostgreSQL:** Managed database
+- **Redis:** Cache and session storage
+- **Celery Workers:** Background task processing
+
+### Auto-Deployment
+
+The CI/CD pipeline automatically deploys to production on pushes to the main branch:
+
+- Tests run on GitHub Actions
+- Docker images built and tested
+- Auto-deploy to Render.com
+- Health checks verify deployment success
+
+### Manual Deployment
+
+```bash
+# Build and deploy with Docker
+docker-compose -f docker-compose.prod.yml up -d
+
+# Run migrations
+docker-compose exec web_prod python manage.py migrate
+
+# Collect static files
+docker-compose exec web_prod python manage.py collectstatic --noinput
+```
+
+## Development
+
+### Local Development Setup
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+
+# Configure database, Redis, etc.
+
+# Run migrations
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
+
+# Start development server
+python manage.py runserver
+```
+
+### Docker Development
+
+```bash
+# Start all services
+docker-compose up --build
+
+# Run specific services
+docker-compose up db redis web
+
+# Run commands in container
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
+```
+
+### Environment Configuration
+
+Create a `.env` file with:
+
+```env
+# Database
+POSTGRES_DB=nexus_commerce_db
+POSTGRES_USER=nexus_user
+POSTGRES_PASSWORD=your_secure_password
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+
+# Django
+DJANGO_SECRET_KEY=your_very_secure_secret_key
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# Celery
+CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+
+# Email
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your_email@domain.com
+EMAIL_HOST_PASSWORD=your_app_password
+```
+
+## Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+python manage.py test
+
+# Run tests with coverage
+coverage run manage.py test
+coverage report
+
+# Run specific app tests
+python manage.py test users
+python manage.py test products
+
+# Run tests in Docker
+docker-compose exec web python manage.py test
+
+# Run with pytest
+pytest
+```
+
+### Test Data Generation
+
+The project uses factory-boy for generating realistic test data:
+
+```python
+# Example factory
+class ProductFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Product
+    
+    name = factory.Faker('word')
+    price = factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True)
+    stock_quantity = factory.Faker('random_int', min=0, max=100)
+```
+
+## Configuration
+
+### Django Settings
+
+The project uses environment-specific settings:
+
+- `nexus_commerce/settings.py` - Base settings
+- `nexus_commerce/settings_production.py` - Production overrides
+
+### Key Configuration Areas
+
+- **Caching:** Redis-based with intelligent invalidation
+- **Rate Limiting:** Comprehensive API throttling
+- **Security:** JWT authentication, CORS, CSRF protection
+- **Performance:** Database optimization, query caching
+- **Monitoring:** Health checks, structured logging
+
+## Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Write tests for new functionality
+- Follow PEP 8 style guide
+- Update documentation for new features
+- Use descriptive commit messages
+- Ensure all tests pass before submitting PR
+
+## Performance Features
+
+### Optimization Strategies
+
+- **Database Indexing:** Optimized queries with proper indexes
+- **Query Optimization:** Strategic use of `select_related()` and `prefetch_related()`
+- **Redis Caching:** Multi-level caching for frequently accessed data
+- **Background Processing:** Celery for non-blocking operations
+- **Static Files:** CDN-ready configuration
+
+### Monitoring
+
+- **Health Endpoint:** `/healthz` for service monitoring
+- **Structured Logging:** JSON-formatted logs in production
+- **Performance Metrics:** Response time tracking
+- **Error Tracking:** Comprehensive error handling
+
+## Troubleshooting
+
+### Common Issues
+
+**Database Connection Issues:**
+```bash
+# Check if services are running
+docker-compose ps
+
+# Reset database
+docker-compose down -v
+docker-compose up -d
+```
+
+**Redis Connection Issues:**
+```bash
+# Test Redis connection
+docker-compose exec redis redis-cli ping
+```
+
+**Celery Worker Issues:**
+```bash
+# Check Celery status
+docker-compose exec celery_worker celery -A nexus_commerce status
+
+# View logs
+docker-compose logs celery_worker
+```
+
+### Getting Help
+
+- Check the API Documentation
+- Review the GraphQL Schema
+- Examine application logs for detailed error information
+
+## Author
+
+**Kimotho Karani** - [GitHub Profile](https://github.com/KimothoKarani)
+
+## Acknowledgments
+
+- ALX Software Engineering Program for the learning foundation
+- Django and Django REST Framework communities
+- Render.com for excellent hosting services
+- The open-source community for invaluable tools and libraries
 
 ---
 
-## Introduction to ProDev Backend Engineering Program
-This repository, `alx-project-nexus`, is a comprehensive documentation hub for my major learnings throughout the ProDev Backend Engineering program. It consolidates key concepts, technologies, challenges, and solutions encountered, demonstrating my understanding and application of backend development principles. This project also functions as a personal reference guide and a testament to the skills acquired.
+**If this project helps you, please give it a star!**
 
-## Key Technologies Covered
-### Python
-*   **Overview:** Python's versatility, readability, and extensive ecosystem, especially with frameworks like Django, make it an indispensable language for building robust and scalable backend systems. Its clear syntax and vast community support significantly streamline the development process.
-*   **Key Learnings:** I gained proficiency in managing virtual environments (`venv`, `pipenv`), effectively handling package dependencies with `pip`, and deepening my understanding of fundamental data structures (lists, dictionaries, sets). I also strengthened my knowledge of Object-Oriented Programming (OOP) principles, learned to use decorators and context managers effectively, and implemented robust error handling mechanisms.
+[API Docs](https://nexus-commerce.onrender.com/swagger/) · [Report Issues](https://github.com/KimothoKarani/issues) · [Request Features](https://github.com/KimothoKarani/issues)
 
-### Django
-*   **Overview:** Django is a "batteries-included" high-level Python web framework that promotes rapid development and clean, pragmatic design. It handles much of the boilerplate, allowing developers to focus on application logic.
-*   **Key Learnings:** I mastered the MVT (Model-View-Template) architectural pattern, learning to leverage Django's powerful ORM (Object-Relational Mapper) for seamless database interactions. I became adept at managing database schema changes using migrations, customizing and extending the Django Admin Interface for backend management, and developing robust forms for data input and validation.
+## Useful Links
 
-### REST APIs (Django REST Framework)
-*   **Overview:** RESTful APIs provide a standardized, stateless, client-server communication method over HTTP, and Django REST Framework (DRF) significantly simplifies their creation and implementation within a Django project.
-*   **Key Learnings:** My focus was on designing clear and intuitive API endpoints, implementing serializers for efficient data validation and representation, and utilizing class-based views (specifically `APIView`, `Generic Views`, and `ViewSets`) for building efficient and maintainable API logic. I also learned to configure various authentication schemes (e.g., Token, Session), set appropriate permissions (`IsAuthenticated`, `IsAdminUser`), and implement pagination and filtering for handling large datasets.
+- [Live API Documentation](https://nexus-commerce.onrender.com/swagger/)
+- [GraphQL Playground](https://nexus-commerce.onrender.com/graphql/)
+- [Django Documentation](https://docs.djangoproject.com/)
+- [Django REST Framework](https://www.django-rest-framework.org/)
+- [Render Deployment Guide](https://render.com/docs)
 
-### GraphQL APIs
-*   **Overview:** GraphQL is a powerful query language for APIs and a runtime for fulfilling those queries with existing data. It allows clients to request exactly the data they need, improving efficiency and reducing over-fetching compared to traditional REST APIs.
-*   **Key Learnings:** I learned to define precise schemas with strong typing for data types and fields, write complex queries to fetch specific data tailored to client needs, and craft mutations for safe and controlled data manipulation. I also explored how subscriptions enable real-time updates and understood the significant advantages GraphQL offers for applications with complex and evolving data requirements.
+---
 
-### Docker
-*   **Overview:** Docker enables containerization, a process of packaging applications and their dependencies into isolated, portable units called containers. This ensures consistent environments across development, testing, and production.
-*   **Key Learnings:** I became proficient in writing `Dockerfiles` to define and build custom images for my applications. I learned to manage and run individual containers, and crucially, how to orchestrate multi-service applications (like a Django app with PostgreSQL and Redis) using `docker-compose.yml`. I gained a solid understanding of Docker volumes for persistent data storage and how to configure networks for seamless inter-container communication.
-
-### CI/CD (GitHub Actions)
-*   **Overview:** Continuous Integration (CI) and Continuous Deployment/Delivery (CD) are practices that automate the building, testing, and deployment of code changes, leading to faster, more reliable, and more frequent software releases. GitHub Actions provide an integrated way to implement these pipelines.
-*   **Key Learnings:** I learned to set up GitHub Actions workflows to automate various stages of my development pipeline. This included automated unit and integration testing, code linting, building Docker images, and deploying applications to different environments (e.g., staging, production) upon code pushes or successful pull request merges, significantly improving my development workflow efficiency.
-
-### Celery & RabbitMQ
-*   **Overview:** Celery is a robust distributed task queue that allows for the asynchronous execution of long-running or resource-intensive tasks, preventing blocking operations in the main application thread. RabbitMQ often serves as the message broker, facilitating communication between the application and Celery workers.
-*   **Key Learnings:** I learned to define and register tasks within my Django applications, push these tasks to queues, and configure Celery workers to process them in the background. I gained an understanding of how to monitor task status and the critical role of message brokers in decoupling processes, thereby improving application responsiveness and overall scalability.
-
-## Important Backend Development Concepts
-### Database Design & Optimization (PostgreSQL)
-*   **Overview:** A well-structured database is absolutely fundamental for ensuring data integrity, optimizing data retrieval efficiency, and ultimately boosting application performance. PostgreSQL served as our powerful, open-source relational database system.
-*   **Key Learnings:** I deeply engaged with applying normalization principles (1NF, 2NF, 3NF) to achieve data consistency and minimize redundancy. I learned to design efficient schemas with appropriate data types and relationships, create and manage indexes for significantly faster query execution, and write optimized SQL queries. Furthermore, I understood the importance of transactions for maintaining data integrity and explored PostgreSQL-specific features like JSONB for flexible data storage.
-
-### Asynchronous Programming
-*   **Overview:** Asynchronous programming allows certain operations to run independently of the main program flow. This is crucial for preventing the application from blocking during I/O-bound or time-consuming tasks, thereby improving overall responsiveness and user experience.
-*   **Key Learnings:** I grasped the core concepts of non-blocking I/O and event loops. I extensively applied asynchronous patterns in Python, particularly in the context of integrating Celery for background tasks, to offload long-running operations and ensure the main application thread remains responsive.
-
-### Caching Strategies
-*   **Overview:** Caching is a vital technique for improving application performance and scalability by storing frequently accessed data in faster, temporary storage. This significantly reduces the load on the primary database and speeds up response times for repeated requests.
-*   **Key Learnings:** I implemented various caching levels, from in-memory caching using Django's built-in cache framework to distributed caching solutions with Redis. I learned to select appropriate caching mechanisms based on data volatility and access patterns, designed effective cache invalidation strategies (e.g., time-based expiration, event-driven invalidation), and understood the critical trade-offs between cache freshness and performance gains.
-
-### System Design & Scalable Architecture
-*   **Overview:** System design involves meticulously planning the architecture of a software system to meet critical functional and non-functional requirements, such as scalability, reliability, maintainability, and performance.
-*   **Key Learnings:** I gained insights into differentiating between monolithic and microservices architectures, understanding their respective advantages and disadvantages. I learned principles for designing systems that can scale both horizontally and vertically, implemented load balancing strategies, and incorporated message queues for robust inter-service communication and efficient task distribution. My understanding also expanded to designing for fault tolerance, resilience, and patterns like API Gateways.
-
-### Authentication & Authorization
-*   **Overview:** Authentication is the process of verifying a user's identity ("Who are you?"), while authorization determines what actions an authenticated user is permitted to perform ("What can you do?"). Both are paramount for securing any application.
-*   **Key Learnings:** I implemented various authentication methods, including JSON Web Tokens (JWT) for stateless APIs, session-based authentication for traditional web applications, and explored concepts of OAuth2. I focused on designing robust authorization systems using roles and permissions, and deeply engaged with security best practices such as secure password hashing, comprehensive input validation, and protecting sensitive data from common web vulnerabilities.
-
-## Challenges Faced & Solutions Implemented
-
-### Challenge: Optimizing N+1 Query Problem in Django REST Framework
-**Problem:** During the development of a specific API endpoint, I observed significant performance degradation due to the "N+1 query problem," where retrieving a list of objects also triggered N additional database queries to fetch related data for each object
-
-**Approach:** I first identified the N+1 queries using Django Debug Toolbar. I then researched Django ORM's `select_related()` and `prefetch_related()` methods, understanding their differences and appropriate use cases for one-to-one/many-to-one and many-to-many/many-to-one relationships, respectively.
-
-**Solution:** By applying `select_related()` to eagerly load foreign key relationships and `prefetch_related()` for many-to-many relationships in my `queryset` within the DRF view, I reduced the number of database queries from N+1 to a fixed, minimal number (e.g., 2).
-
-**Learnings:** This experience reinforced the importance of monitoring database queries and leveraging Django ORM's powerful optimization tools to prevent performance bottlenecks.
-
-### Challenge: Implementing Robust Background Task Management with Celery
-**Problem:** I needed to offload time-consuming operations, like sending emails or processing large data files, from the main request-response cycle to improve API responsiveness. Initially, these tasks were blocking, leading to slow user experiences
-
-**Approach:** I researched distributed task queues and identified Celery with RabbitMQ as a suitable solution. My approach involved understanding Celery's architecture (broker, worker, client), defining tasks, and integrating them correctly into my Django application. I considered error handling and task retry mechanisms.
-
-**Solution:** I successfully integrated Celery and RabbitMQ, defining specific tasks for email notifications and data processing. I configured Celery workers to run continuously, consuming tasks from the RabbitMQ queue. I implemented error handling for failed tasks, including automatic retries, and ensured task status could be monitored.
-
-**Learnings:** This challenge taught me the immense value of asynchronous processing for improving application scalability and user experience. I learned the intricacies of configuring and monitoring a distributed task queue system, understanding how to effectively decouple operations and build more resilient backend systems.
-
-## Best Practices & Personal Takeaways
-*   **Code Quality:** My commitment to writing clean, readable, modular, and well-commented code was paramount. I routinely utilized linters (e.g., `flake8`) and formatters (e.g., `Black`) to maintain consistent code style. I embraced Test-Driven Development (TDD) principles by writing unit and integration tests to ensure code reliability and prevent regressions, which significantly improved code confidence.
-*   **Version Control:** I became proficient in effective GitHub usage for version control. This involved adhering to clear and descriptive commit message conventions, maintaining distinct feature branches for development, and actively participating in code reviews to ensure code quality and foster collaborative development.
-*   **API Documentation:** I recognized the critical importance of clear, accurate, and up-to-date API documentation. I leveraged tools like Swagger/OpenAPI to automatically generate interactive documentation directly from my Django REST Framework endpoints, which greatly facilitated seamless integration for frontend teams and external consumers.
-*   **Security:** I prioritized implementing robust security considerations throughout development. This included rigorous input validation, proper user authentication and authorization mechanisms, protecting against common web vulnerabilities (e.g., CSRF, XSS), and handling sensitive data securely. I also explored rate limiting to prevent API abuse and brute-force attacks.
-*   **Personal Growth:** This program significantly enhanced my problem-solving abilities, honed my critical thinking in architecting scalable backend systems, and strengthened my capacity to quickly learn and adapt to new technologies. I grew not only as a developer but also in understanding the full lifecycle of a backend application, from conception to deployment and maintenance.
-
-## Collaboration & Project Management Tools
-*   **Trello/Notion:** These tools were instrumental for organizing my tasks, setting clear milestones, tracking progress, and managing both my individual and team workflows efficiently. They provided excellent visual aids for understanding project scope and dependencies.
-*   **Google Meet/Zoom:** Regularly scheduled virtual meetings fostered effective team discussions, facilitated collaborative problem-solving sessions, and maintained strong communication channels throughout all collaborative projects.
-*   **Discord:** The dedicated Discord channels, particularly `#ProDevProjectNexus`, were invaluable hubs for exchanging ideas with both frontend and backend learners. They served as quick platforms for asking questions, getting immediate answers, and staying updated with program announcements and direct support from mentors.
-
-## Conclusion
-This ProDev Backend Engineering program, culminating in Project Nexus, has been an immensely transformative experience. It has equipped me with a comprehensive understanding of modern backend development principles and technologies, from foundational Python and Django to advanced topics like containerization, asynchronous tasks, and scalable system design. 
-
-I am confident in my ability to apply these skills to build impactful, robust, and efficient backend systems, and I look forward to contributing to real-world projects with this solid foundation. My journey through Project Nexus has solidified my passion for backend engineering and prepared me to tackle complex challenges with confidence.
-
-## Entity Relationship Diagram (ERD)
-
-Here’s the database design for the e-commerce backend:
-
-![ERD](docs/Nexus_commerce.png)
-
-You can also explore the interactive ERD here: [View on dbdiagram.io](https://dbdiagram.io/d/Nexus_commerce-68c7dba4ce69eed1117f1840)
+**Production Status:** Live and actively maintained  
+**Last Deployment:** Automatically deployed on main branch commits  
+**API Version:** v1 (Stable)  
+**Support:** Open issues for questions and support
