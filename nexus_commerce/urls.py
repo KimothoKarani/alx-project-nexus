@@ -29,6 +29,7 @@ from drf_yasg import openapi
 
 from graphene_django.views import GraphQLView
 from nexus_commerce.schema import schema
+from .health import health_check
 
 
 # Swagger/OpenAPI Schema View configuration
@@ -54,8 +55,11 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
-# GraphQL Endpoint
+    # GraphQL Endpoint
     path('graphql/', GraphQLView.as_view(graphiql=True, schema=schema)), # graphiql=True for in-browser IDE
+
+    # Health check endpoint for Render/K8s/etc.
+    path("healthz", health_check),
 
     # API Endpoints for the application
     path('api/v1/users/', include('users.urls')),
