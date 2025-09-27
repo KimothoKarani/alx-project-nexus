@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:15-bookworm
@@ -6,7 +8,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5432:5432" # For local DB client access but it's optional
+      - "5432:5432"
 
   redis:
     image: redis:7-bookworm
@@ -19,27 +21,29 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
     ports:
-      - "5672:5672" #AMQP protocol port (for Celery)
-      - "15672:15672" # Management UI port (http://localhost:15672)
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # Development services
   web:
-    build: . # This will build the image using the Dockerfile in the current directory
-    command: python manage.py runserver 0.0.0.0:8000 # To run Django
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app # Mount the entire root into the container's /app for live code changes
+      - .:/app
     ports:
-      - "8000:8000" # Mapped container port 8000 yo host port 8000
+      - "8000:8000"
     env_file:
       - .env
     depends_on:
       - db
       - redis
       - rabbitmq
+
   celery_worker:
     build: .
     command: celery -A nexus_commerce worker --loglevel=info --concurrency=1
@@ -52,9 +56,9 @@ services:
     depends_on:
       - db
       - redis
-      - rabbitmq # Celery worker depends on RabbitMQ and Redis
-      - web # Depends on web to ensure Django project structure is built
-    restart: on-failure # Automatically restart if it crashes
+      - rabbitmq
+      - web
+    restart: on-failure
 
   celery_beat:
     build: .
@@ -68,9 +72,92 @@ services:
       - redis
       - rabbitmq
 
+  # Production-like services for local testing
+  web_prod:
+    build: .
+    ports:
+      - "8001:8000"  # Different port to avoid conflict with dev web service
+    environment:
+      DJANGO_SETTINGS_MODULE: nexus_commerce.settings_production
+      POSTGRES_DB: nexus_commerce_db
+      POSTGRES_USER: nexus_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-a_strong_password_change_me}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq:5672//'
+      CELERY_RESULT_BACKEND: 'redis://redis:6379/0'
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-a_very_strong_secret_key_change_me_for_production}
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+      PORT: 8000
+      # Optional S3 credentials for local testing
+      # AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID:-}
+      # AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY:-}
+      # AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME:-}
+      # AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME:-us-east-1}
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    profiles: ["production"]
+    entrypoint: ["/app/docker-entrypoint.sh"]
+    command: gunicorn nexus_commerce.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+
+  celery_worker_prod:
+    build: .
+    environment:
+      DJANGO_SETTINGS_MODULE: nexus_commerce.settings_production
+      POSTGRES_DB: nexus_commerce_db
+      POSTGRES_USER: nexus_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-a_strong_password_change_me}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq:5672//'
+      CELERY_RESULT_BACKEND: 'redis://redis:6379/0'
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-a_very_strong_secret_key_change_me_for_production}
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+      # Optional S3 credentials
+      # AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID:-}
+      # AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY:-}
+      # AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME:-}
+      # AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME:-us-east-1}
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+      - web_prod
+    restart: on-failure
+    profiles: ["production"]
+    command: celery -A nexus_commerce worker --loglevel=info --concurrency=1
+
+  celery_beat_prod:
+    build: .
+    environment:
+      DJANGO_SETTINGS_MODULE: nexus_commerce.settings_production
+      POSTGRES_DB: nexus_commerce_db
+      POSTGRES_USER: nexus_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-a_strong_password_change_me}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq:5672//'
+      CELERY_RESULT_BACKEND: 'redis://redis:6379/0'
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-a_very_strong_secret_key_change_me_for_production}
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+      - web_prod
+    profiles: ["production"]
+    command: celery -A nexus_commerce beat --loglevel=info
 
 volumes:
-    postgres_data:
-
-
-
+  postgres_data:
