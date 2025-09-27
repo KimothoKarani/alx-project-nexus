@@ -361,6 +361,7 @@ class Command(BaseCommand):
             })
 
         for product_data in products_data:
+            product_data.pop("dimensions", None)  # ✅ quick fix
             Product.objects.create(**product_data)
 
         self.stdout.write(f"✅ Created {len(products_data)} realistic products")
