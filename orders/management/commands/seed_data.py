@@ -102,15 +102,6 @@ class Command(BaseCommand):
     def seed_users_and_addresses(self):
         """Seed realistic users with proper addresses"""
         users_data = [
-            # Admin
-            {
-                "email": "admin@nexuscommerce.com",
-                "full_name": "Alex Johnson",
-                "user_type": "admin",
-                "phone_number": "+1-555-0101",
-                "is_staff": True,
-                "is_superuser": True
-            },
             # Sellers
             {
                 "email": "techworld@example.com",
