@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_yasg',
     'graphene_django',
+    'drf_spectacular',
 
     # Local apps
     'users',
@@ -171,49 +172,100 @@ else:
 
 PHONENUMBER_DB_FORMAT = 'E164' # Stores phone numbers in a standardized international format
 
+# Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication', # For browsable API
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated', # default to requiring authentication
+        'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10, # Page size for pagination
+    'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': (
-        'django_filters.rest_framework.DjangoFilterBackend', # For filtering
-        'rest_framework.filters.SearchFilter', # For searching
-        'rest_framework.filters.OrderingFilter' # For ordering/sorting
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ),
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), # Access token validity
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1), # Refresh token validity
-    'ROTATE_REFRESH_TOKENS': True, # Issue new refresh token on refresh
-    'BLACKLIST_AFTER_ROTATION': True, # Blacklist old refresh token
-    'UPDATE_LAST_LOGIN': True, # Update user's last login time
 
+# JWT Configuration
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
-    'AUDIENCE': None,
-    'ISSUER': None,
-
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'id', # Use UUID for user ID
+    'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
-    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+}
 
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
-    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
-    'JTI_CLAIM': 'jti',
+# API Documentation with drf-spectacular
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Nexus Commerce API',
+    'DESCRIPTION': """
+# Nexus Commerce - Production E-commerce Backend API
 
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
-    'SLIDING_TOKEN_REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+A comprehensive, production-ready e-commerce backend API built with Django REST Framework and GraphQL.
+
+## Authentication
+
+This API uses JWT (JSON Web Tokens) for authentication. To access protected endpoints:
+
+### Authentication Flow:
+1. **Register a new user**: `POST /api/v1/users/register/`
+2. **Obtain JWT tokens**: `POST /api/token/` with email and password
+3. **Authorize requests**: Include `Authorization: Bearer <your_access_token>` header
+
+### Demo Accounts:
+- **Customer**: `demo.customer@nexuscommerce.com` / `demo123456`
+- **Seller**: `tech.seller@nexuscommerce.com` / `seller123456`
+
+## API Features
+
+### REST API Endpoints:
+- **User Management**: Registration, profiles, addresses
+- **Product Catalog**: Products, categories, reviews with advanced filtering
+- **Shopping Cart**: Persistent cart with session management
+- **Order Processing**: Complete order lifecycle with payments
+
+### GraphQL Endpoint:
+- **Single endpoint**: `/graphql/`
+- **Flexible queries**: Request exactly the data you need
+- **Real-time ready**: Subscriptions support
+
+## Quick Start
+
+1. Register a user or use demo accounts above
+2. Get JWT tokens from `/api/token/`
+3. Explore endpoints with proper authentication
+4. Use GraphQL for complex data relationships
+    """,
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayRequestDuration': True,
+    },
+    'SECURITY': [
+        {
+            'JWT': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    ],
+    'SECURITY_REQUIREMENTS': [{'JWT': []}],
 }
 
 # Security headers (production hardening)
@@ -221,6 +273,15 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://nexus-commerce.onrender.com",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Celery configuration
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/1')
@@ -268,3 +329,25 @@ AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',  # JWT backend for GraphQL
     'django.contrib.auth.backends.ModelBackend',  # Django's default backend
 ]
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
