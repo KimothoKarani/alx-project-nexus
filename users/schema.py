@@ -10,7 +10,7 @@ class UserType(DjangoObjectType):
         model = User
         fields = (
             'id', 'email', 'full_name', 'phone_number', 'profile_image',
-            'user_type', 'is_active', 'is_staff', 'date_joined'
+            'user_type', 'is_active', 'is_staff', 'date_joined', 'addresses'
         )
 
 
