@@ -211,22 +211,12 @@ SIMPLE_JWT = {
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Nexus Commerce API',
     'DESCRIPTION': """
-# Nexus Commerce - Production E-commerce Backend API
-
 A comprehensive, production-ready e-commerce backend API built with Django REST Framework and GraphQL.
-
-## Authentication
-
-This API uses JWT (JSON Web Tokens) for authentication. To access protected endpoints:
 
 ### Authentication Flow:
 1. **Register a new user**: `POST /api/v1/users/register/`
 2. **Obtain JWT tokens**: `POST /api/token/` with email and password
 3. **Authorize requests**: Include `Authorization: Bearer <your_access_token>` header
-
-### Demo Accounts:
-- **Customer**: `demo.customer@nexuscommerce.com` / `demo123456`
-- **Seller**: `tech.seller@nexuscommerce.com` / `seller123456`
 
 ## API Features
 
@@ -239,7 +229,6 @@ This API uses JWT (JSON Web Tokens) for authentication. To access protected endp
 ### GraphQL Endpoint:
 - **Single endpoint**: `/graphql/`
 - **Flexible queries**: Request exactly the data you need
-- **Real-time ready**: Subscriptions support
 
 ## Quick Start
 
