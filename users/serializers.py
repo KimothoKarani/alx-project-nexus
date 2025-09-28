@@ -4,6 +4,10 @@ from .models import User, Address
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
+    user_type = serializers.ChoiceField(
+        choices=[("customer", "Customer"), ("seller", "Seller")],  # exclude admin
+        required=True
+    )
 
     class Meta:
         model = User
@@ -12,6 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
             "user_type", "is_active", "is_staff", "date_joined", "password",
         ]
         read_only_fields = ["id", "is_active", "is_staff", "date_joined"]
+
+    def validate_user_type(self, value):
+        """Prevent self-registration as admin."""
+        if value and value.lower() == "admin":
+            raise serializers.ValidationError("You cannot register as an admin.")
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop("password", None)
@@ -22,10 +32,15 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
+        # Prevent user_type changes after registration
+        if "user_type" in validated_data and instance.user_type != validated_data["user_type"]:
+            raise serializers.ValidationError({"user_type": "User type cannot be changed after registration."})
+
         password = validated_data.pop("password", None)
         if password:
             instance.set_password(password)
             instance.save(update_fields=["password"])
+
         return super().update(instance, validated_data)
 
 
