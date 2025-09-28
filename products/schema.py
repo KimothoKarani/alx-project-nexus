@@ -23,7 +23,7 @@ class ProductType(DjangoObjectType):
         fields = (
             'id', 'name', 'slug', 'description', 'price', 'stock_quantity',
             'image', 'is_available', 'created_at', 'updated_at',
-            'category', 'owner', 'sku', 'brand', 'weight', 'dimensions'
+            'category', 'owner', 'sku', 'brand', 'weight', 'dimensions', 'reviews'
         )
 
     def resolve_average_rating(self, info):
