@@ -181,7 +181,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': (
@@ -207,55 +206,6 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# API Documentation with drf-spectacular
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Nexus Commerce API',
-    'DESCRIPTION': """
-A comprehensive, production-ready e-commerce backend API built with Django REST Framework and GraphQL.
-
-### Authentication Flow:
-1. **Register a new user**: `POST /api/v1/users/register/`
-2. **Obtain JWT tokens**: `POST /api/token/` with email and password
-3. **Authorize requests**: Include `Authorization: Bearer <your_access_token>` header
-
-## API Features
-
-### REST API Endpoints:
-- **User Management**: Registration, profiles, addresses
-- **Product Catalog**: Products, categories, reviews with advanced filtering
-- **Shopping Cart**: Persistent cart with session management
-- **Order Processing**: Complete order lifecycle with payments
-
-### GraphQL Endpoint:
-- **Single endpoint**: `/graphql/`
-- **Flexible queries**: Request exactly the data you need
-
-## Quick Start
-
-1. Register a user or use demo accounts above
-2. Get JWT tokens from `/api/token/`
-3. Explore endpoints with proper authentication
-4. Use GraphQL for complex data relationships
-    """,
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_REQUEST': True,
-    'SWAGGER_UI_SETTINGS': {
-        'deepLinking': True,
-        'persistAuthorization': True,
-        'displayRequestDuration': True,
-    },
-    'SECURITY': [
-        {
-            'JWT': {
-                'type': 'http',
-                'scheme': 'bearer',
-                'bearerFormat': 'JWT',
-            }
-        }
-    ],
-    'SECURITY_REQUIREMENTS': [{'JWT': []}],
-}
 
 # Security headers (production hardening)
 SECURE_BROWSER_XSS_FILTER = True
@@ -339,4 +289,19 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'INFO',
     },
+}
+
+# Swagger settings for JWT
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'JWT': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'PERSIST_AUTH': True,
 }
