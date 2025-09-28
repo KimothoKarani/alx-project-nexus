@@ -29,16 +29,10 @@ schema_view = get_schema_view(
         description="""
 A comprehensive, production-ready e-commerce backend API built with Django REST Framework and GraphQL.
 
-## Authentication
-
-This API uses JWT (JSON Web Tokens) for authentication. To access protected endpoints:
-
 ### Authentication Flow:
 1. **Register a new user**: `POST /api/v1/users/register/`
 2. **Obtain JWT tokens**: `POST /api/token/` with email and password
 3. **Authorize requests**: Include `Authorization: Bearer <your_access_token>` header
-
-## API Features
 
 ### REST API Endpoints:
 - **User Management**: Registration, profiles, addresses
@@ -50,27 +44,10 @@ This API uses JWT (JSON Web Tokens) for authentication. To access protected endp
 - **Single endpoint**: `/graphql/`
 - **Flexible queries**: Request exactly the data you need
 
-## Quick Start
-
-1. Register a user
-2. Get JWT tokens from `/api/token/`
-3. Explore endpoints with proper authentication
-4. Use GraphQL for complex data relationships
-
 ## Documentation Links
 - **REST API**: This Swagger documentation
 - **GraphQL**: Interactive playground at `/graphql/`
         """,
-        terms_of_service="https://www.nexuscommerce.com/terms/",
-        contact=openapi.Contact(
-            name="Nexus Commerce Support",
-            email="support@nexuscommerce.com",
-            url="https://github.com/KimothoKarani/alx-project-nexus"
-        ),
-        license=openapi.License(
-            name="BSD License",
-            url="https://opensource.org/licenses/BSD-3-Clause"
-        ),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
