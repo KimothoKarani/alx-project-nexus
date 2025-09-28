@@ -87,7 +87,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     # --- Caching for Retrieve View ---
     def retrieve(self, request, *args, **kwargs):
-        cache_key = f"prduct_detail:{kwargs.get('slug')}"
+        cache_key = f"product_detail:{kwargs.get('slug')}"
         cached_data = cache.get(cache_key)
 
         if cached_data:
